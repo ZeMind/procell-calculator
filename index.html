@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<iframe
+  id="myIFrame"
+  style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"
+>
+</iframe>
+</body>
+<script>
+
+  let isIFrameLoadedAndReady = false;
+  let isUnityDataSent = false;
+  let isSelectDevicesWindowClosed = false;
+  let selectedIndustry = "";
+  let eventData = "";
+  let myIframe = document.getElementById("myIFrame");
+
+  const calculatorUrl = "https://uat.procell.com/wp-content/themes/jupiterx-child/assets/dist/insite-cost-calc/index.html?booth=1";
+  const newCustomerKeys = ["name", "email", "event", "company"];
+
+  Init();
+
+  function ReceiveUnityData(unityData){
+
+    let mainData = unityData;
+    unityData = JSON.parse(unityData)
+    let data = {};
+    data["name"] = unityData["Name"];
+    data["email"] = unityData["Email"];
+    data["event"] = unityData["EventName"];
+    data["company"] = unityData["Company"];
+    myIframe.contentWindow.postMessage({name: 'customer-data', data: data}, "*");
+    isUnityDataSent = true;
+    return JSON.stringify(data);
+  }
+
+  function GetUpdate(){
+    let update = {};
+
+    update["isIFrameLoadedAndReady"] = isIFrameLoadedAndReady;
+    update["isUnityDataSent"] = isUnityDataSent;
+    update["selectedIndustry"] = selectedIndustry;
+    update["isSelectDevicesWindowClosed"] = isSelectDevicesWindowClosed;
+    //update["eventData"] = eventData;
+
+    return JSON.stringify(update);
+  }
+
+  function Init(){
+    window.addEventListener('load', OnPageLoadedHandler)
+    window.addEventListener("message", OnReceivedMessageHandler, true);
+
+    myIframe.onload = OnIFrameLoadedHandler;
+    myIframe.src = GetIframeUrl();
+  }
+
+  function GetIframeUrl() {
+    const searchParam = new URLSearchParams(window.location.search)
+    return calculatorUrl + "&" + searchParam.toString();
+  }
+
+  function OnIFrameLoadedHandler(){
+    console.log("Iframe loaded!");
+    isIFrameLoadedAndReady = true;
+  }
+
+  function OnPageLoadedHandler() {
+    console.log("Page is loaded!")
+  }
+
+  function OnReceivedMessageHandler(event) {
+    console.log("OnReceivedMessageHandler")
+    console.log('received response:  ', event.data);
+
+    if(event.data['name'] === "calculation-update"){
+      selectedIndustry = event.data['data']['industry'];
+      eventData = JSON.stringify(event.data['data']);
+    }
+
+    if(event.data['name'] === "select-devices-dismissed"){
+      isSelectDevicesWindowClosed = true;
+    }
+  }
+</script>
+</html>
