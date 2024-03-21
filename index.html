@@ -18,6 +18,8 @@
   let isSelectDevicesWindowClosed = false;
   let selectedIndustry = "";
   let eventData = "";
+
+
   let myIframe = document.getElementById("myIFrame");
 
   const calculatorUrl = "https://uat.procell.com/wp-content/themes/jupiterx-child/assets/dist/insite-cost-calc/index.html?booth=1";
@@ -30,7 +32,8 @@
     let mainData = unityData;
     unityData = JSON.parse(unityData)
     let data = {};
-    data["name"] = unityData["Name"];
+    data["firstName"] = unityData["FirstName"];
+    data["lastName"] = unityData["LastName"];
     data["email"] = unityData["Email"];
     data["event"] = unityData["EventName"];
     data["company"] = unityData["Company"];
@@ -46,10 +49,16 @@
     update["isUnityDataSent"] = isUnityDataSent;
     update["selectedIndustry"] = selectedIndustry;
     update["isSelectDevicesWindowClosed"] = isSelectDevicesWindowClosed;
-    //update["eventData"] = eventData;
+    update["eventData"] = eventData;
 
     return JSON.stringify(update);
   }
+
+  /*function GetUpdate(){
+
+
+    return "Hello";
+  }*/
 
   function Init(){
     window.addEventListener('load', OnPageLoadedHandler)
@@ -86,5 +95,48 @@
       isSelectDevicesWindowClosed = true;
     }
   }
+
+  //OLD-------------------------------------------------------------------------------------------
+
+  let button = document.getElementById("testButton");
+  button.onclick = function () {
+    // let unityData = {};
+    // unityData["name"] = "Mark";
+    // unityData["email"] = "mark@unity.com";
+    // unityData["event"] = "SomeEvent";
+    // unityData["company"] = "Unity";
+    // myIframe.contentWindow.postMessage({name: 'customer-data', data: unityData}, "*");
+    let unityData = {}
+    unityData["Name"] = "SomeName";
+    unityData["Email"] = "SomeMail";
+    unityData["EventName"] = "SomeEvent"
+    unityData["Company"] = "SomeCompany"
+    ReceiveUnityData(unityData)
+  }
+
+  function UpdateUrlParam(key, value) {
+    const searchParam = new URLSearchParams(window.location.search)
+    searchParam.set(key, value);
+    UpdateUrl(searchParam);
+  }
+
+  function SetNewCustomerUrlParam(unityData) {
+    const searchParam = new URLSearchParams()
+    for (let i = 0; i < newCustomerKeys.length; i++) {
+      let key = newCustomerKeys[i];
+      searchParam.set(key, unityData[key]);
+    }
+    console.log(unityData);
+    console.log(searchParam.toString());
+    UpdateUrl(searchParam);
+  }
+
+  function UpdateUrl(searchParam) {
+    const newRelativePathQuery = window.location.pathname + "?" + searchParam.toString();
+    history.replaceState(null, "", newRelativePathQuery);
+    myIframe.contentWindow.location.replace(myIframe.src + searchParam.toString());
+  }
+
 </script>
 </html>
+
